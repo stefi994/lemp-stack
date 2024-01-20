@@ -1,0 +1,21 @@
+name: Checking SSH
+
+on: [pull_request, workflow_dispatch]
+
+jobs:
+    ssh:
+        name: Checking if SSH is working
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Install ssh keys
+          run: |
+            install -m 600 -D /dev/null ~/.ssh/id_rsa
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+
+        - name: Connect and touch
+          run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd lemp-stack/ && git pull && ./script.sh"
+
+        - name: cleanup
+          run: rm -rf ~/.ssh
